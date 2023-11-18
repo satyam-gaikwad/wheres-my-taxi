@@ -1,9 +1,23 @@
 #func
-from logging import raiseExceptions
 from streamlit_js_eval import get_geolocation
 from streamlit_folium import folium_static
 import requests
 import folium
+from datetime import datetime
+import pickle
+import numpy as np
+import geopandas as gpd
+from shapely.geometry import Point
+
+from sklearn.preprocessing import StandardScaler,LabelEncoder
+from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split,cross_val_predict,cross_val_score
+
+from sklearn.metrics import r2_score,mean_squared_error
+
+
 
 
 def get_coordinates_from_address(address):
@@ -48,3 +62,37 @@ def distance_matrix(pickup,dropoff):
     r = requests.get(url)
     result = r.json()
     return result['routes'][0]['distance'],result['routes'][0]['duration']
+
+
+def get_locatinID(coords,zone_list):
+    point = Point(coords['longitude'], coords['latitude'])
+    matching_zone = zone_list[zone_list.geometry.contains(point)]
+    if not matching_zone.empty:
+        LocationID = matching_zone.iloc[0]['objectid']
+        return LocationID
+    else:
+        return -1
+
+
+def generate_random_location(shapefile_path, polygon_id):
+    # Step 1: Read the shapefile
+    gdf = shapefile_path
+    # Step 2: Get the specific polygon by ID
+    selected_polygon = gdf[gdf['objectid'] == polygon_id].geometry.values[0]
+
+    # Step 3: Get the bounding box of the selected polygon
+    bounding_box = selected_polygon.bounds
+
+    # Step 4: Generate random coordinates within the bounding box
+    min_x, min_y, max_x, max_y = bounding_box
+    random_point = Point(np.random.uniform(min_x, max_x), np.random.uniform(min_y, max_y))
+
+    # Step 5: Check if the point is within the selected polygon
+    if selected_polygon.contains(random_point):
+        location = {'longitude':random_point.x,
+                    'latitude': random_point.y}
+        # Step 6: Return longitude and latitude
+        return location
+    else:
+        # Retry if not within the polygon
+        return generate_random_location(shapefile_path, polygon_id)
