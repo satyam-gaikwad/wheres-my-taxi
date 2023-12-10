@@ -59,8 +59,8 @@ def main():
     weekday = datetime.now().weekday()
     st.session_state.distance,st.session_state.time = distance_matrix(pickup=st.session_state.pickup,dropoff=st.session_state.dropoff)
     st.session_state.PUL = get_locatinID(st.session_state.pickup,taxi_zones)
-    st.session_state.DOL = get_locatinID(st.session_state.dropoff,taxi_zones)
-
+    #st.session_state.DOL = get_locatinID(st.session_state.dropoff,taxi_zones)
+    st.session_state.DOL = np.random.randint(low=1,high=263)
     # Extract feature values from session state
     pass_count = st.session_state.pass_count
     RCID = st.session_state.RCID
@@ -84,8 +84,9 @@ def main():
 
         
         # Predict fare
-        pred = regressor.predict([[pass_count, distance, RCID, PUL, DOL, time, hour, weekday]])
-        st.success(f'Your fare for the trip will be {pred}')
+        for i in range(263):
+            pred = regressor.predict([[pass_count, distance, RCID, PUL, i, time, hour, weekday]])
+            st.success(f'Your fare for the trip will be {pred}')
 
 
 

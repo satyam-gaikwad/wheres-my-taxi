@@ -28,8 +28,6 @@ def main():
 
 
 
-
-
     address = st.text_input("Enter Drop off locaation.")
 
     if address:
@@ -42,9 +40,25 @@ def main():
     
     pass_count = st.number_input('Enter number of passengers', min_value=1)
 
-    RCID = st.radio('Select your vRateCodeID', options=[1,2,3,4,5,6])
+    RCID = st.radio('Select your RateCodeID', options=[1,2,3,4,5,6])
 
-        
+    hour = int(datetime.now().hour)
+    weekday = datetime.now().weekday()
+
+    taxi_zones = gpd.read_file("/home/user/Desktop/wheres-my-taxi/wheres-my-taxi/2019_data/geo_export_4323a1fa-9e81-4f79-bb4c-9011fa40138e.shp")
+    PUL = get_locatinID(pickup,taxi_zones)
+    DOL = get_locatinID(dropoff,taxi_zones)
+
+    pickle_in = open('taxi_RF.pkl','rb')
+    regressor = pickle.load(pickle_in)
+    st.write([pass_count,distance,RCID,PUL,DOL,time,hour,weekday])
+    #@st.cache()
+
+    if st.button('Predict Fare'):
+    #def prediction(PUL,DOL,distance,time,pass_count,RCID,hour,weekday):
+        pred = regressor.predict([[pass_count,distance,RCID,PUL,DOL,time,hour,weekday]])
+        st.success(f'Your fare for the trip will be {pred}')
+    
 
 
     

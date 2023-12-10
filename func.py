@@ -1,4 +1,5 @@
 #func
+from types import NoneType
 from streamlit_js_eval import get_geolocation
 from streamlit_folium import folium_static
 import requests
@@ -35,7 +36,9 @@ def get_coordinates_from_address(address):
                 'longitude': float(data[0]['lon'])}
         
     else:
-        raise ValueError("Error: No coordinates found.")
+        return {'latitude' : 0,
+                'longitude': 0}
+        #raise ValueError("Error: No coordinates found.")
         
 
 def plot_map(location):
@@ -65,11 +68,14 @@ def distance_matrix(pickup,dropoff):
 
 
 def get_locatinID(coords,zone_list):
-    point = Point(coords['longitude'], coords['latitude'])
-    matching_zone = zone_list[zone_list.geometry.contains(point)]
-    if not matching_zone.empty:
-        LocationID = matching_zone.iloc[0]['objectid']
-        return LocationID
+    if coords!=None:
+        point = Point(coords['longitude'], coords['latitude'])
+        matching_zone = zone_list[zone_list.geometry.contains(point)]
+        if not matching_zone.empty:
+            LocationID = matching_zone.iloc[0]['objectid']
+            return LocationID
+        else:
+            return -1
     else:
         return -1
 
