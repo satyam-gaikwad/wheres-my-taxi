@@ -1,5 +1,6 @@
 #func
 from types import NoneType
+import streamlit as st 
 from streamlit_js_eval import get_geolocation
 from streamlit_folium import folium_static
 import requests
@@ -9,14 +10,6 @@ import pickle
 import numpy as np
 import geopandas as gpd
 from shapely.geometry import Point
-
-from sklearn.preprocessing import StandardScaler,LabelEncoder
-from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split,cross_val_predict,cross_val_score
-
-from sklearn.metrics import r2_score,mean_squared_error
 
 
 
@@ -53,7 +46,7 @@ def plot_map(location):
                     key='get_loc_mark')
             
     mark.add_to(map)
-    folium_static(map,width=725)
+    folium_static(map,width=650)
     return map,mark
 
 def get_location():
@@ -102,3 +95,10 @@ def generate_random_location(shapefile_path, polygon_id):
     else:
         # Retry if not within the polygon
         return generate_random_location(shapefile_path, polygon_id)
+    
+def predict(pass_count, distance, RCID, PUL, DOL, time, hour, weekday):
+       # Load the model
+       pickle_in = open('taxi_RF.pkl', 'rb')
+       regressor = pickle.load(pickle_in)
+       pred = regressor.predict([[pass_count, distance, RCID, PUL, DOL, time, hour, weekday]])
+       st.success(f'Your fare for the trip will be {pred}') 
