@@ -1,5 +1,5 @@
 #func
-from types import NoneType
+
 import streamlit as st 
 from streamlit_js_eval import get_geolocation
 from streamlit_folium import folium_static
@@ -8,7 +8,6 @@ import folium
 from datetime import datetime
 import pickle
 import numpy as np
-import geopandas as gpd
 from shapely.geometry import Point
 
 
