@@ -1,6 +1,6 @@
 streamlit
 numpy
-streamlit_js_eval
+streamlit-js-eval
 streamlit_folium
 requests
 folium
