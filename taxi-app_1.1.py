@@ -17,6 +17,7 @@ def main():
     try:
         st.session_state.pickup = get_geolocation()['coords']
         if get_locatinID(pickup,taxi_zones) == -1:
+            
             st.warning('You are not in New York')
     except:
         st.warning('Auto location Failed')
@@ -38,15 +39,6 @@ def main():
             PU_mark.add_to(PUmap)
             #folium_static(PUmap,width=725)
 
-    '''
-    address = st.text_input("Enter Drop off locaation.")
-
-    if address:
-        dropoff = get_coordinates_from_address(address)
-        if get_locatinID(dropoff,taxi_zones) != -1:
-            DOmap,DO_mark = plot_map(dropoff)
-        else:
-            st.warning('Enter Dropoff address from newyork only')'''
     st.write('Generate Random Dropoff(FOR TESTING)')
     st.session_state.dropoff = generate_random_location(taxi_zones,np.random.randint(210))
     plot_map(st.session_state.dropoff)
