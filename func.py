@@ -7,6 +7,7 @@ import requests
 import folium
 from datetime import datetime
 import pickle
+import geopandas as gpd
 import numpy as np
 from shapely.geometry import Point
 
