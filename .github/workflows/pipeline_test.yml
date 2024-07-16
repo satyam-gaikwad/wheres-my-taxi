@@ -1,8 +1,8 @@
 name: Run Scripts Based on Condition
 
 on:
-  schedule:
-    - cron: '*/5 * * * *'  # Runs every 5 minutes
+  # schedule:
+  #   - cron: '*/5 * * * *'  # Runs every 5 minutes
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
       id: check-new-data
       run: |
         python check_new_data_test.py
-        echo "::set-output name=result::$(cat results_test.txt)"  # Replace results_test.txt with your script1 output
+        echo "{result}:{result} >> $(cat results_test.txt)"  # Replace results_test.txt with your script1 output
 
   run-script2:
     needs: run-script1
