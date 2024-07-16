@@ -4,6 +4,5 @@ streamlit-js-eval
 streamlit_folium
 requests
 folium==0.15.0
-pickle
 shapely==2.0.2
 datetime
