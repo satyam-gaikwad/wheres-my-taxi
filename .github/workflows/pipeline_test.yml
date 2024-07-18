@@ -27,7 +27,6 @@ jobs:
       id: check-new-data
       run: |
         python check_new_data_test.py
-        #echo "{result}:{result}" >> $GITHUB_OUTPUT  # Replace results_test.txt with your script1 output
     
     - name: push and commit to repo
       id : push
