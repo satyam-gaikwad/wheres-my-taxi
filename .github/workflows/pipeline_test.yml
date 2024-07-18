@@ -27,7 +27,16 @@ jobs:
       id: check-new-data
       run: |
         python check_new_data_test.py
-        echo "{result}:{result} >> $(cat results_test.txt)"  # Replace results_test.txt with your script1 output
+        echo "{result}:{result} >> $GITHUB_OUTPUT  # Replace results_test.txt with your script1 output
+    
+    - name: push and commit to repo
+      id : push
+      run: |
+        git config --global satyam-gaikwad 'github-actions'
+        git config --global satyamgaikwad92@gmail.com 'github-actions@github.com'
+        git add results_test.txt parquet_files_test.txt
+        git commit -m 'Update result and parquet files'
+        git push
 
   run-script2:
     needs: run-script1
