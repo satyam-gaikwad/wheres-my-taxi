@@ -31,8 +31,8 @@ jobs:
     - name: push and commit to repo
       id : push
       run: |
-        git config --global satyam-gaikwad 'github-actions'
-        git config --global satyamgaikwad92@gmail.com 'github-actions@github.com'
+        git config --global user.name "satyam-gaikwad"
+        git config --global user.email "satyamgaikwad92@gmail.com"
         git add results_test.txt parquet_files_test.txt
         git commit -m 'Update result and parquet files'
         git push
