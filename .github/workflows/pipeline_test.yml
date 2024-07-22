@@ -13,6 +13,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Set up Git
+      run: |
+        git config --global user.name "satyam-gaikwad"
+        git config --global user.email "satyamgaikwad92@gmail.com"
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
