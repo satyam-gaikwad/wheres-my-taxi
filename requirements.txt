@@ -6,3 +6,4 @@ requests
 folium==0.15.0
 shapely==2.0.2
 datetime
+scikit-learn
