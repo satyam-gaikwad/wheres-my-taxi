@@ -126,7 +126,7 @@ with open('results.txt', 'r') as file:
     lines = file.readlines()
 
 with open('parquet_files_test.txt', 'r') as data_file:
-    data_files = data_file.read().split(',')
+    data_files = data_file.read().split('\n')
 print(data_files)
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 #random forest
