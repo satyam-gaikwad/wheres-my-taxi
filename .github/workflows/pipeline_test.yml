@@ -78,6 +78,12 @@ jobs:
     - name: Run train_test.py
       run: |
         python train_test.py
+
+    - name: push and commit to repo
+      id : push
+      run: |
+        git config --global user.name "satyam-gaikwad"
+        git config --global user.email "satyamgaikwad92@gmail.com"
         git add SGD_model.pkl
-        git commit - m "Adding SGD model"
+        git commit -m 'Update result and parquet files'
         git push
