@@ -6,14 +6,14 @@ folder_path = 'chunked_data'
 count = 0
 with open('parquet_files_test.txt', 'r+') as data_file:
     file_paths = data_file.read()
-    file_paths = file_paths.split(',')
+    file_paths = file_paths.split('\n')
     print(file_paths)
     for root, dirs, files in os.walk(folder_path):
         for file in files:
             file_path = os.path.join(root, file)
             if file_path.endswith('.parquet') and file_path not in file_paths:
                 file_paths.append(file_path)
-                data_file.write(file_path + ',')
+                data_file.write(file_path + '\n')
                 count+=1
                 print(f'Added new file: {file_path}')
             else:
