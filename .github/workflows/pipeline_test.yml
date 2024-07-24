@@ -42,20 +42,20 @@ jobs:
         git commit -m 'Update result and parquet files'
         git push
 
-    - name: Read and update results_test.txt
-      id: update-file
-      run: |
-        # Read the current content of results_test.txt
-        content=$(cat results_test.txt)
+    # - name: Read and update results_test.txt
+    #   id: update-file
+    #   run: |
+    #     # Read the current content of results_test.txt
+    #     content=$(cat results_test.txt)
         
-        # Append some new content (modify as per your needs)
-        new_content="${content}\nAdditional line added by workflow."
+    #     # Append some new content (modify as per your needs)
+    #     new_content="${content}\nAdditional line added by workflow."
         
-        # Write the updated content back to the file
-        echo -e "$new_content" > results_test.txt
+    #     # Write the updated content back to the file
+    #     echo -e "$new_content" > results_test.txt
         
-        # Verify the updated content
-        cat results_test.txt
+    #     # Verify the updated content
+    #     cat results_test.txt
 
   run-script2:
     needs: run-script1
