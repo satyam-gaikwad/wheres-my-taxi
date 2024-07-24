@@ -1,0 +1,10 @@
+chunked_data/satyam8.parquet
+chunked_data/satyam2.parquet
+chunked_data/satyam1.parquet
+chunked_data/satyam9.parquet
+chunked_data/satyam5.parquet
+chunked_data/satyam3.parquet
+chunked_data/satyam4.parquet
+chunked_data/satyam6.parquet
+chunked_data/satyam0.parquet
+chunked_data/satyam7.parquet
