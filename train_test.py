@@ -174,7 +174,7 @@ if int(lines[0]) == 1:
     SGDRegressor = SGDRegressor()
     # Read the data from the files
     for i in range(num_files,0,-1):
-        print(i)
+        print('index',i)
         file_path = data_files[i]  # Assuming the file names are file1.txt, file2.txt, etc.
         df = pd.read_parquet(file_path, engine='pyarrow')
         df = preprocessing.fit_transform(df)
