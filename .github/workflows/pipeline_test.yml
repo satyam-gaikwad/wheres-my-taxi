@@ -70,11 +70,14 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+    # - name: Install dependencies
+    #   run: |
+    #     python -m pip install --upgrade pip
+    #     pip install -r requirements.txt
 
     - name: Run train_test.py
       run: |
         python train_test.py
+        git add SGD_model.pkl
+        git commit - m "Adding SGD model"
+        git push
