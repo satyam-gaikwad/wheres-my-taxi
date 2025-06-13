@@ -22,6 +22,9 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
 class DropInvalidRows(BaseEstimator, TransformerMixin):
     """Drop rows with invalid values."""
     
+    def __init__(self):
+        self.dropped_indices_ = None
+        
     def fit(self, X, y=None):
         return self
         
@@ -35,6 +38,9 @@ class DropInvalidRows(BaseEstimator, TransformerMixin):
                 (X['fare_amount'] > 0) & \
                 (X['total_amount'] > 0) & \
                 (X['total_sec'] > 0)
+        
+        # Store dropped indices
+        self.dropped_indices_ = X.index[~mask]
         
         return X[mask]
 
@@ -76,6 +82,9 @@ class Addtotalsec(BaseEstimator, TransformerMixin):
 class RemoveOutliers(BaseEstimator, TransformerMixin):
     """Remove outliers based on total seconds."""
     
+    def __init__(self):
+        self.dropped_indices_ = None
+        
     def fit(self, X, y=None):
         return self
         
@@ -83,11 +92,11 @@ class RemoveOutliers(BaseEstimator, TransformerMixin):
         X = X.copy()
         # Remove trips longer than 2 hours
         mask = X['total_sec'] <= 7200
+        self.dropped_indices_ = X.index[~mask]
         return X[mask]
 
 # Create preprocessing pipeline
 preprocessing = Pipeline([
-    ('add_total_sec', Addtotalsec()),
     ('add_day_number', AddDayNumber()),
     ('add_pu_hour', AddPUhour()),
     ('remove_outliers', RemoveOutliers()),
@@ -113,23 +122,61 @@ def train_sgd_regressor(data_files: List[str], num_files: int = None) -> Tuple[S
     if num_files is not None:
         data_files = data_files[:num_files]
     
+    if not data_files:
+        print("No files provided for training.")
+        return None, None, None
+    
+    print(f"Processing {len(data_files)} files...")
+    
     # Load and process data
     dfs = []
+    valid_files = []
     for file in data_files:
-        df = pd.read_parquet(file)
-        dfs.append(df)
+        try:
+            df = pd.read_parquet(file)
+            # Calculate total_sec before preprocessing
+            pickup = pd.to_datetime(df['tpep_pickup_datetime'])
+            dropoff = pd.to_datetime(df['tpep_dropoff_datetime'])
+            df['total_sec'] = (dropoff - pickup).dt.total_seconds()
+            dfs.append(df)
+            valid_files.append(file)
+        except Exception as e:
+            print(f"Error processing file {file}: {str(e)}")
+            continue
+    
+    if not dfs:
+        print("No valid data files to process.")
+        return None, None, None
     
     data = pd.concat(dfs, ignore_index=True)
     
-    # Prepare features and target
-    X = preprocessing.fit_transform(data)
+    # Store target before preprocessing
     y = data['total_sec'].values
+    
+    # Prepare features
+    X = preprocessing.fit_transform(data)
+    
+    # Get all dropped indices from preprocessing steps
+    dropped_indices = set()
+    if hasattr(preprocessing.named_steps['remove_outliers'], 'dropped_indices_'):
+        dropped_indices.update(preprocessing.named_steps['remove_outliers'].dropped_indices_)
+    if hasattr(preprocessing.named_steps['drop_invalid'], 'dropped_indices_'):
+        dropped_indices.update(preprocessing.named_steps['drop_invalid'].dropped_indices_)
+    
+    # Filter y to match X
+    mask = ~data.index.isin(dropped_indices)
+    y = y[mask]
+    
+    # Verify shapes match
+    assert len(X) == len(y), f"X shape {len(X)} != y shape {len(y)}"
     
     # Train model
     model = SGDRegressor(random_state=42)
     model.fit(X, y)
     
-    # Save trained files
-    save_trained_files(set(data_files))
+    # Save only the successfully processed files as trained
+    if valid_files:
+        save_trained_files(set(valid_files))
+        print(f"Successfully processed and saved {len(valid_files)} files as trained.")
     
     return model, X, y 

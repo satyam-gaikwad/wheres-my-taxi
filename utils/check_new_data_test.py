@@ -3,39 +3,50 @@ from pathlib import Path
 from typing import List, Set
 from .utils import get_processed_files, get_trained_files
 
-def check_new_data() -> List[str]:
+def get_all_data_files() -> List[str]:
     """
-    Check for new data files that haven't been processed or trained on.
+    Get all data files from both raw and processed directories.
     
     Returns:
-        List of new file paths
+        List of paths to all data files
     """
-    # Get directories
-    data_dir = Path("data")
+    data_dir = Path(__file__).parent.parent / "data"
     raw_dir = data_dir / "raw"
     processed_dir = data_dir / "processed"
     
-    # Get sets of processed and trained files
-    processed_files = get_processed_files()
-    trained_files = get_trained_files()
+    all_files = []
     
-    # Find all parquet files in raw directory
-    raw_files = set()
+    # Get files from raw directory
     if raw_dir.exists():
-        raw_files = {f.name for f in raw_dir.glob("*.parquet")}
+        raw_files = sorted(raw_dir.glob("*.parquet"))
+        all_files.extend([str(f) for f in raw_files])
     
-    # Find all parquet files in processed directory
-    processed_dir_files = set()
+    # Get files from processed directory
     if processed_dir.exists():
-        processed_dir_files = {f.name for f in processed_dir.glob("*.parquet")}
+        processed_files = sorted(processed_dir.glob("*.parquet"))
+        all_files.extend([str(f) for f in processed_files])
     
-    # Find new files (in raw but not in processed)
-    new_files = raw_files - processed_dir_files
+    return sorted(all_files)
+
+def check_new_data() -> List[str]:
+    """
+    Check for new data files in the data directory.
     
-    # Convert to full paths
-    new_file_paths = [str(raw_dir / f) for f in new_files]
-    
-    return new_file_paths
+    Returns:
+        List of paths to new data files
+    """
+    data_dir = Path(__file__).parent.parent / "data"
+    if not data_dir.exists():
+        print(f"Data directory not found: {data_dir}")
+        return []
+        
+    # Get all parquet files
+    data_files = sorted(data_dir.glob("*.parquet"))
+    if not data_files:
+        print("No data files found.")
+        return []
+        
+    return [str(f) for f in data_files]
 
 def get_unprocessed_files() -> List[str]:
     """
