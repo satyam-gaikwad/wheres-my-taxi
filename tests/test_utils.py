@@ -1,9 +1,16 @@
 import unittest
 import pandas as pd
 import numpy as np
-from test.utils.utils import (
+import sys
+from pathlib import Path
+
+# Add the project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.append(str(project_root))
+
+from utils.utils import (
     get_processed_files, get_trained_files, save_trained_files,
-    get_processed_files, save_processed_files, get_processed_files
+    save_processed_files
 )
 
 class TestUtils(unittest.TestCase):

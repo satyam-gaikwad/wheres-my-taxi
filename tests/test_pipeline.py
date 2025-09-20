@@ -1,11 +1,19 @@
 import unittest
 import pandas as pd
 import numpy as np
-from test.utils.pipeline import (
+import sys
+from pathlib import Path
+
+# Add the project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.append(str(project_root))
+
+from utils.pipeline import (
     ColumnSelector, DropInvalidRows, AddDayNumber, AddPUhour, Addtotalsec, RemoveOutliers,
-    preprocessing, train_sgd_regressor, get_trained_files, save_trained_files
+    preprocessing, train_sgd_regressor
 )
-from test.utils.check_new_data_test import check_new_data
+from utils.utils import get_trained_files, save_trained_files
+from utils.check_new_data_test import check_new_data
 
 class TestPipeline(unittest.TestCase):
     def test_column_selector(self):
@@ -46,11 +54,28 @@ class TestPipeline(unittest.TestCase):
         self.assertIsInstance(result, np.ndarray)
 
     def test_train_sgd_regressor(self):
-        # Test the training function
-        data_files = ['dummy_file.parquet']  # Mock file
-        num_files = 1
-        sgd, x_test, y_test = train_sgd_regressor(data_files, num_files)
-        self.assertIsNotNone(sgd)
+        # Test the training function with actual data
+        # Create a temporary test data file
+        test_data = pd.DataFrame({
+            'PULocationID': [1, 2, 3],
+            'DOLocationID': [1, 2, 3],
+            'tpep_pickup_datetime': pd.to_datetime(['2023-01-01', '2023-01-01', '2023-01-01']),
+            'tpep_dropoff_datetime': pd.to_datetime(['2023-01-01 00:01:00', '2023-01-01 00:01:00', '2023-01-01 00:01:00']),
+            'trip_distance': [1.5, 2.0, 1.0],
+            'fare_amount': [10.0, 15.0, 8.0],
+            'total_amount': [12.0, 18.0, 10.0]
+        })
+        
+        # Create temp directory if it doesn't exist
+        import tempfile
+        import os
+        with tempfile.NamedTemporaryFile(suffix='.parquet', delete=False) as tmp_file:
+            test_data.to_parquet(tmp_file.name)
+            try:
+                sgd, x_test, y_test = train_sgd_regressor([tmp_file.name])
+                self.assertIsNotNone(sgd)
+            finally:
+                os.unlink(tmp_file.name)
 
     def test_check_new_data(self):
         # Test the new data detection
