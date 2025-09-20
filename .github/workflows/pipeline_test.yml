@@ -1,25 +1,29 @@
-name: Run Scripts Based on Condition
+name: ML Pipeline Monitoring and CI
 
 on:
-  # schedule:
-  #   - cron: '*/5 * * * *'  # Runs every 5 minutes
   workflow_dispatch:  # Allows manual triggering
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 */6 * * *'  # Run every 6 hours
 
 jobs:
-  run-script1:
+  pipeline-monitoring:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pages: write
+      id-token: write
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up Git
-      run: |
-        git config --global user.name "satyam-gaikwad"
-        git config --global user.email "satyamgaikwad92@gmail.com"
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.8'
 
@@ -28,62 +32,77 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run check_new_data_test.py and capture output
-      id: check-new-data
+    - name: Create sample data if none exists
       run: |
-        python check_new_data_test.py
+        if [ ! -f "data/raw/sample_taxi_data_2023_01.parquet" ]; then
+          python create_sample_data.py
+        fi
+
+    - name: Run pipeline with monitoring
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_SHA: ${{ github.sha }}
+      run: |
+        python scripts/run_pipeline.py --retrain
+
+    - name: Run tests
+      run: |
+        python -m pytest tests/ -v --cov=./ --cov-report=xml
+
+    - name: Upload monitoring artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: monitoring-reports
+        path: |
+          monitoring/reports/
+          monitoring/logs/
+
+    - name: Deploy monitoring dashboard to GitHub Pages
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./monitoring/reports/dashboard
+
+    - name: Commit monitoring data
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add monitoring/reports/ monitoring/logs/ || true
+        git commit -m "Update monitoring reports and logs [skip ci]" || true
+        git push || true
+
+  lint-and-validate:
+    runs-on: ubuntu-latest
     
-    - name: push and commit to repo
-      id : push
-      run: |
-        git config --global user.name "satyam-gaikwad"
-        git config --global user.email "satyamgaikwad92@gmail.com"
-        git add results_test.txt parquet_files_test.txt
-        git commit -m 'Update result and parquet files'
-        git push
-
-    # - name: Read and update results_test.txt
-    #   id: update-file
-    #   run: |
-    #     # Read the current content of results_test.txt
-    #     content=$(cat results_test.txt)
-        
-    #     # Append some new content (modify as per your needs)
-    #     new_content="${content}\nAdditional line added by workflow."
-        
-    #     # Write the updated content back to the file
-    #     echo -e "$new_content" > results_test.txt
-        
-    #     # Verify the updated content
-    #     cat results_test.txt
-
-  run-script2:
-    needs: run-script1
-    runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.8'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install flake8 black isort
 
-    - name: Run train_test.py
+    - name: Lint with flake8
       run: |
-        python train_test.py
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    - name: push and commit to repo
-      id : push
+    - name: Check code formatting with black
       run: |
-        git config --global user.name "satyam-gaikwad"
-        git config --global user.email "satyamgaikwad92@gmail.com"
-        git add SGD_model.pkl
-        git commit -m 'Update result and parquet files'
-        git push
+        black --check . || true
+
+    - name: Check import sorting with isort
+      run: |
+        isort --check-only . || true

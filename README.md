@@ -57,12 +57,46 @@ To force retraining on all data, use the `--retrain` flag:
 python scripts/run_pipeline.py --retrain
 ```
 
-## CI/CD
+## CI/CD and Monitoring
 
-This project uses GitHub Actions for continuous integration. The workflow includes:
+This project uses GitHub Actions for continuous integration and includes comprehensive monitoring:
+
+### CI/CD Pipeline
+- **Automated Testing**: Runs on push/PR to main branches
+- **Linting and Code Quality**: flake8, black, isort
+- **Pipeline Execution**: Automated ML pipeline runs every 6 hours
+- **Artifact Storage**: Monitoring reports and model artifacts
+
+### Monitoring System 🎯
+The project includes a comprehensive monitoring system with:
+- **Model Performance Tracking**: MSE, R², MAE metrics
+- **Data Quality Monitoring**: Validation, missing values, duplicates
+- **Pipeline Health**: Execution time, memory usage, error tracking
+- **GitHub Integration**: Automated issue creation for failures
+- **Real-time Dashboard**: HTML dashboard deployed to GitHub Pages
+- **Historical Analysis**: CSV exports and JSON reports
+
+#### Quick Monitoring Setup
+```bash
+# Set GitHub token (optional, for alerts)
+export GITHUB_TOKEN="your_github_token"
+
+# Run pipeline with monitoring
+python scripts/run_pipeline.py --retrain
+
+# View monitoring dashboard
+open monitoring/reports/dashboard/index.html
+```
+
+For detailed monitoring documentation, see [MONITORING.md](MONITORING.md).
+
+### GitHub Actions Workflow
+The workflow includes:
 - Linting with flake8
-- Running the pipeline
-- Running tests
+- Running the ML pipeline with monitoring
+- Automated testing with coverage
+- Dashboard deployment to GitHub Pages
+- Monitoring artifact uploads
 
 ## License
 
