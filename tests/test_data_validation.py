@@ -1,7 +1,14 @@
 import unittest
 import pandas as pd
 import numpy as np
-from test.utils.data_validation import (
+import sys
+from pathlib import Path
+
+# Add the project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.append(str(project_root))
+
+from utils.data_validation import (
     validate_data, validate_processed_data, validate_training_data
 )
 
